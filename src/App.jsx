@@ -25,6 +25,10 @@ function App() {
 
   // Player snake
   const [playerBody, setPlayerBody] = useState([])
+
+  // Effects state
+  const [eatEffect, setEatEffect] = useState(null)
+  const [deathEffect, setDeathEffect] = useState(false)
   const [playerDirection, setPlayerDirection] = useState({ x: 1, y: 0 })
 
   // AI snakes
@@ -102,16 +106,21 @@ function App() {
 
   // Handle start
   const handleStart = useCallback(() => {
+    setDeathEffect(false)
+    setEatEffect(null)
     initGame()
     game.start()
   }, [initGame, game])
 
   // Handle death
   const handleDie = useCallback(() => {
-    game.die()
-    if (score > 0) {
-      saveScore(score, selectedTypeId)
-    }
+    setDeathEffect(true)
+    setTimeout(() => {
+      game.die()
+      if (score > 0) {
+        saveScore(score, selectedTypeId)
+      }
+    }, 500)
   }, [game, score, selectedTypeId, saveScore])
 
   // Keyboard input
@@ -232,6 +241,9 @@ function App() {
             // Player eats AI (player is longer)
             if (playerLength > aiLength && headCollidesWithBody(newPlayerBody, ai.body)) {
               playerAte = true
+              // Trigger eat effect at collision position
+              const eatPos = newPlayerBody[0]
+              setEatEffect({ x: eatPos.x, y: eatPos.y, color: ai.color })
               // Grow player (add extra segment)
               newPlayerBody = [newPlayerBody[0], ...newPlayerBody]
               game.addScore(aiLength * 10)
@@ -300,6 +312,8 @@ function App() {
               playerBody={playerBody}
               playerType={selectedType}
               aiSnakes={aiSnakes}
+              eatEffect={eatEffect}
+              deathEffect={deathEffect}
             />
 
             {status === GameStatus.IDLE && (

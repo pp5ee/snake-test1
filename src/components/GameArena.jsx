@@ -17,24 +17,48 @@ const BG   = '#050510'
  *   playerBody: Array<{x: number, y: number}>,
  *   playerType: { id, color, glowColor, headColor },
  *   aiSnakes:   Array<{ body, color, glowColor, headColor }>,
+ *   eatEffect:  { x: number, y: number, color: string } | null,
+ *   deathEffect: boolean,
  * }} props
  */
-function GameArena({ grid, playerBody, playerType, aiSnakes }) {
+function GameArena({ grid, playerBody, playerType, aiSnakes, eatEffect, deathEffect }) {
   const canvasRef = useRef(null)
   const animRef   = useRef(null)
+  const particlesRef = useRef([])
 
   // Keep latest props accessible inside rAF without re-subscribing
-  const propsRef = useRef({ grid, playerBody, playerType, aiSnakes })
+  const propsRef = useRef({ grid, playerBody, playerType, aiSnakes, eatEffect, deathEffect })
   useEffect(() => {
-    propsRef.current = { grid, playerBody, playerType, aiSnakes }
+    propsRef.current = { grid, playerBody, playerType, aiSnakes, eatEffect, deathEffect }
   })
+
+  // Spawn particles when eatEffect triggers
+  useEffect(() => {
+    if (eatEffect) {
+      const newParticles = []
+      for (let i = 0; i < 12; i++) {
+        const angle = (Math.PI * 2 * i) / 12 + Math.random() * 0.5
+        const speed = 2 + Math.random() * 3
+        newParticles.push({
+          x: eatEffect.x * CELL + CELL / 2,
+          y: eatEffect.y * CELL + CELL / 2,
+          vx: Math.cos(angle) * speed,
+          vy: Math.sin(angle) * speed,
+          life: 1,
+          color: eatEffect.color || '#00ff41',
+          size: 3 + Math.random() * 3,
+        })
+      }
+      particlesRef.current = [...particlesRef.current, ...newParticles]
+    }
+  }, [eatEffect])
 
   /* ── Draw one frame ───────────────────────────────────────────────── */
   const drawFrame = useCallback(() => {
     const canvas = canvasRef.current
     if (!canvas) return
     const ctx = canvas.getContext('2d')
-    const { grid, playerBody, playerType, aiSnakes } = propsRef.current
+    const { grid, playerBody, playerType, aiSnakes, deathEffect } = propsRef.current
 
     const W = grid.cols * CELL
     const H = grid.rows * CELL
@@ -51,16 +75,51 @@ function GameArena({ grid, playerBody, playerType, aiSnakes }) {
     // Grid
     drawGrid(ctx, grid)
 
+    // Death effect - red flash overlay
+    if (deathEffect) {
+      ctx.fillStyle = 'rgba(255, 0, 60, 0.3)'
+      ctx.fillRect(0, 0, W, H)
+    }
+
     // AI snakes (drawn first, underneath)
     ;(aiSnakes || []).forEach(({ body, color, glowColor, headColor }) =>
       drawAiSnake(ctx, body, color, glowColor, headColor)
     )
 
-    // Player snake (on top)
+    // Player snake (on top) - with death effect tint
     if (playerType && playerBody && playerBody.length) {
       const typeData = SNAKE_TYPES[playerType.id] || null
-      drawPlayerSnake(ctx, playerBody, playerType, typeData)
+      if (deathEffect) {
+        // Draw player with red tint when dead
+        ctx.globalAlpha = 0.7
+        drawPlayerSnake(ctx, playerBody, { ...playerType, color: '#ff003c', glowColor: 'rgba(255,0,60,0.8)' }, typeData)
+        ctx.globalAlpha = 1
+      } else {
+        drawPlayerSnake(ctx, playerBody, playerType, typeData)
+      }
     }
+
+    // Update and draw particles
+    particlesRef.current = particlesRef.current.filter(p => {
+      p.x += p.vx
+      p.y += p.vy
+      p.life -= 0.03
+      p.vy += 0.1 // gravity
+
+      if (p.life > 0) {
+        ctx.globalAlpha = p.life
+        ctx.shadowBlur = 8
+        ctx.shadowColor = p.color
+        ctx.fillStyle = p.color
+        ctx.beginPath()
+        ctx.arc(p.x, p.y, p.size * p.life, 0, Math.PI * 2)
+        ctx.fill()
+        ctx.shadowBlur = 0
+        ctx.globalAlpha = 1
+        return true
+      }
+      return false
+    })
   }, [])
 
   /* ── Animation loop ───────────────────────────────────────────────── */
