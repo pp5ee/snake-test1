@@ -1,0 +1,210 @@
+/* ============================================================
+   Snake Battle Royale — Cyberpunk Theme
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Orbitron:wght@400;700;900&family=Share+Tech+Mono&display=swap');
+
+/* ---------- CSS Custom Properties ---------- */
+:root {
+  --neon-cyan:    #00f5ff;
+  --neon-magenta: #ff00ff;
+  --neon-yellow:  #f5ff00;
+  --neon-green:   #00ff41;
+  --neon-red:     #ff003c;
+  --neon-orange:  #ff6b00;
+
+  --bg-dark:      #050510;
+  --bg-panel:     #0a0a1a;
+  --bg-card:      #0f0f2a;
+  --border-glow:  rgba(0, 245, 255, 0.4);
+
+  --font-hud:     'Orbitron', monospace;
+  --font-mono:    'Share Tech Mono', monospace;
+}
+
+/* ---------- Reset ---------- */
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+}
+
+/* ---------- Base ---------- */
+body {
+  background-color: var(--bg-dark);
+  color: var(--neon-cyan);
+  font-family: var(--font-mono);
+  min-height: 100vh;
+  overflow-x: hidden;
+
+  /* Subtle scanline overlay */
+  background-image:
+    repeating-linear-gradient(
+      0deg,
+      transparent,
+      transparent 2px,
+      rgba(0, 245, 255, 0.015) 2px,
+      rgba(0, 245, 255, 0.015) 4px
+    );
+}
+
+/* ---------- App Layout ---------- */
+.app-container {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  min-height: 100vh;
+  padding: 2rem 1rem;
+}
+
+/* ---------- Header ---------- */
+.app-header {
+  text-align: center;
+  margin-bottom: 2rem;
+}
+
+.app-title {
+  font-family: var(--font-hud);
+  font-size: clamp(1.8rem, 5vw, 3.5rem);
+  font-weight: 900;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--neon-cyan);
+  text-shadow:
+    0 0 8px  var(--neon-cyan),
+    0 0 20px var(--neon-cyan),
+    0 0 40px var(--neon-cyan),
+    0 0 80px rgba(0, 245, 255, 0.5);
+}
+
+.app-subtitle {
+  font-family: var(--font-hud);
+  font-size: 0.85rem;
+  letter-spacing: 0.4em;
+  color: var(--neon-magenta);
+  text-shadow: 0 0 10px var(--neon-magenta);
+  margin-top: 0.4rem;
+}
+
+/* ---------- Glitch Effect ---------- */
+.glitch {
+  position: relative;
+}
+
+.glitch::before,
+.glitch::after {
+  content: attr(data-text);
+  position: absolute;
+  inset: 0;
+  font-family: var(--font-hud);
+  font-weight: 900;
+}
+
+.glitch::before {
+  color: var(--neon-magenta);
+  animation: glitch-clip-1 4s infinite linear;
+  clip-path: polygon(0 30%, 100% 30%, 100% 50%, 0 50%);
+  transform: translate(-2px, 0);
+}
+
+.glitch::after {
+  color: var(--neon-green);
+  animation: glitch-clip-2 4s infinite linear;
+  clip-path: polygon(0 60%, 100% 60%, 100% 80%, 0 80%);
+  transform: translate(2px, 0);
+}
+
+@keyframes glitch-clip-1 {
+  0%, 90%, 100% { opacity: 0; }
+  91%, 95%      { opacity: 1; transform: translate(-3px, 1px); }
+  96%, 99%      { opacity: 1; transform: translate(3px, -1px); }
+}
+
+@keyframes glitch-clip-2 {
+  0%, 88%, 100% { opacity: 0; }
+  89%, 93%      { opacity: 1; transform: translate(3px, -2px); }
+  94%, 97%      { opacity: 1; transform: translate(-3px, 2px); }
+}
+
+/* ---------- Main area ---------- */
+.app-main {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1;
+  width: 100%;
+}
+
+.placeholder-text {
+  font-family: var(--font-hud);
+  font-size: 1.4rem;
+  letter-spacing: 0.1em;
+  color: var(--neon-yellow);
+  text-shadow: 0 0 12px var(--neon-yellow);
+  animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+  0%, 100% { opacity: 1; }
+  50%       { opacity: 0.4; }
+}
+
+/* ---------- Neon border utility ---------- */
+.neon-border {
+  border: 1px solid var(--neon-cyan);
+  box-shadow:
+    0 0 6px  var(--neon-cyan),
+    inset 0 0 6px rgba(0, 245, 255, 0.1);
+}
+
+/* ---------- Neon button ---------- */
+.btn-neon {
+  font-family: var(--font-hud);
+  font-size: 0.9rem;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+  background: transparent;
+  border: 2px solid var(--neon-cyan);
+  color: var(--neon-cyan);
+  padding: 0.6rem 1.8rem;
+  cursor: pointer;
+  transition: all 0.2s ease;
+  text-shadow: 0 0 8px var(--neon-cyan);
+  box-shadow: 0 0 10px rgba(0, 245, 255, 0.3);
+  clip-path: polygon(8px 0%, 100% 0%, calc(100% - 8px) 100%, 0% 100%);
+}
+
+.btn-neon:hover {
+  background: rgba(0, 245, 255, 0.15);
+  box-shadow: 0 0 20px rgba(0, 245, 255, 0.6);
+}
+
+.btn-neon:active {
+  transform: scale(0.97);
+}
+
+.btn-neon.danger {
+  border-color: var(--neon-red);
+  color: var(--neon-red);
+  text-shadow: 0 0 8px var(--neon-red);
+  box-shadow: 0 0 10px rgba(255, 0, 60, 0.3);
+}
+
+.btn-neon.success {
+  border-color: var(--neon-green);
+  color: var(--neon-green);
+  text-shadow: 0 0 8px var(--neon-green);
+  box-shadow: 0 0 10px rgba(0, 255, 65, 0.3);
+}
+
+/* ---------- Scrollbar ---------- */
+::-webkit-scrollbar {
+  width: 6px;
+}
+::-webkit-scrollbar-track {
+  background: var(--bg-panel);
+}
+::-webkit-scrollbar-thumb {
+  background: var(--neon-cyan);
+  box-shadow: 0 0 6px var(--neon-cyan);
+}
